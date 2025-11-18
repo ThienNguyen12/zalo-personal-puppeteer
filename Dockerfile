@@ -1,7 +1,6 @@
-# Chrome-ready Puppeteer on Render
 FROM node:20-bullseye-slim
 
-# Install system dependencies required by Chrome
+# Install Chrome dependencies
 RUN apt-get update && apt-get install -y \
     wget gnupg ca-certificates \
     fonts-liberation libasound2 \
@@ -14,21 +13,25 @@ RUN apt-get update && apt-get install -y \
     libgtk-3-0 libdrm2 libpangocairo-1.0-0 \
     --no-install-recommends && rm -rf /var/lib/apt/lists/*
 
-# Install Google Chrome (needed for stable Puppeteer)
-RUN wget -qO- https://dl.google.com/linux/linux_signing_key.pub | apt-key add - && \
-    echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list && \
+# Add Google Chrome repository & install Chrome
+RUN wget -qO - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - && \
+    echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" \
+    > /etc/apt/sources.list.d/google-chrome.list && \
     apt-get update && apt-get install -y google-chrome-stable
 
-# Puppeteer will use Google Chrome installed above
+# Puppeteer should use Google Chrome
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 
 WORKDIR /app
-COPY package*.json ./
 
+# Install app dependencies
+COPY package*.json ./
 RUN npm install --omit=dev
 
 COPY . .
 
 EXPOSE 10000
+
 CMD ["node", "index.js"]
+
