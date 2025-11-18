@@ -15,10 +15,19 @@ let page = null;
 
 async function launchBrowser() {
   if (browser) return;
-  browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox','--disable-setuid-sandbox','--disable-dev-shm-usage']
-  });
+ browser = await puppeteer.launch({
+  headless: true,
+  executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+  args: [
+    "--no-sandbox",
+    "--disable-setuid-sandbox",
+    "--disable-dev-shm-usage",
+    "--disable-gpu",
+    "--disable-features=NetworkService",
+    "--disable-features=VizDisplayCompositor"
+  ]
+});
+
   page = await browser.newPage();
   // optional: speed up
   await page.setViewport({ width: 1200, height: 900 });
